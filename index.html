@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShopHub - Your Online Shopping Destination</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                🛍️ ShopHub
+            </div>
+            <div class="nav-icons">
+                <button class="icon-btn" onclick="openCartModal()">
+                    🛒 Cart
+                </button>
+                <a href="wishlist.html" style="text-decoration: none;">
+                    <button class="icon-btn">
+                        ❤️ Wishlist
+                    </button>
+                </a>
+                <a href="checkout.html" style="text-decoration: none;">
+                    <button class="icon-btn">
+                        📦 Checkout
+                    </button>
+                </a>
+                <a href="admin.html" style="text-decoration: none;">
+                    <button class="icon-btn">
+                        🛠️ Admin
+                    </button>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="main-content">
+            <!-- Products Section -->
+            <div class="products-section">
+                <h2>Featured Products</h2>
+                <div class="products-grid" id="productsGrid"></div>
+            </div>
+
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <!-- Cart Summary -->
+                <div class="sidebar-section">
+                    <h3>📦 Cart Summary</h3>
+                    <div id="cartSummary" class="empty-message">Your cart is empty</div>
+                    <div id="cartSummaryItems"></div>
+                    <div class="cart-summary">
+                        <div class="summary-line">
+                            <span>Subtotal:</span>
+                            <span id="subtotal">₹0</span>
+                        </div>
+                        <div class="summary-line">
+                            <span>Shipping:</span>
+                            <span id="shipping">₹0</span>
+                        </div>
+                        <div class="summary-line">
+                            <span>Tax (10%):</span>
+                            <span id="tax">₹0</span>
+                        </div>
+                        <div class="summary-line total">
+                            <span>Total:</span>
+                            <span id="total">₹0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Wishlist Summary -->
+                <div class="sidebar-section">
+                    <h3>❤️ Wishlist</h3>
+                    <div id="wishlistSummary" class="empty-message">Your wishlist is empty</div>
+                    <div id="wishlistItems"></div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- Cart Modal -->
+    <div id="cartModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('cartModal')">&times;</span>
+            <h2 class="modal-title">🛒 Shopping Cart</h2>
+            <div id="cartModalContent" class="empty-message">Your cart is empty</div>
+        </div>
+    </div>
+
+    <!-- Quick Buy Modal -->
+    <div id="quickBuyModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('quickBuyModal')"></span>
+            <h2 class="modal-title">🚀 Quick Purchase</h2>
+            
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <p style="font-size: 16px; color: #333; margin-bottom: 5px;"><strong id="quickBuyName">Product Name</strong></p>
+                <p style="font-size: 18px; color: #ff9500; font-weight: bold;">Price: <span id="quickBuyPrice">₹0</span></p>
+                <p style="font-size: 14px; color: #666; margin-top: 5px;">Quantity: <strong>1</strong></p>
+            </div>
+
+            <h3 style="color: #27ae60; margin-bottom: 15px;">📍 Delivery Address</h3>
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="quickName" placeholder="Enter your full name">
+            </div>
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" id="quickPhone" placeholder="Enter your phone number">
+            </div>
+            <div class="form-group">
+                <label>Complete Address</label>
+                <input type="text" id="quickAddress" placeholder="Full address with ZIP code">
+            </div>
+            <div class="form-group">
+                <label>City</label>
+                <input type="text" id="quickCity" placeholder="City">
+            </div>
+
+            <div class="checkout-actions">
+                <button class="btn-secondary" onclick="closeModal('quickBuyModal')">Cancel</button>
+                <button class="btn-primary" onclick="completeBuyNow()">Confirm Purchase</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Message -->
+    <div id="successMessage" class="success-message"></div>
+
+    <script src="script.js"></script>
+    <script>
+        // Open cart modal on index page
+        function openCartModal() {
+            updateCartModalContent();
+            openModal('cartModal');
+        }
+
+        function updateCartModalContent() {
+            const content = document.getElementById('cartModalContent');
+            if (cart.length === 0) {
+                content.innerHTML = '<div class="empty-message">Your cart is empty</div>';
+                return;
+            }
+
+            let html = '<div style="max-height: 400px; overflow-y: auto;">';
+            let total = 0;
+            cart.forEach(item => {
+                const product = products.find(p => p.id === item.id);
+                if (product) {
+                    const itemTotal = product.price * item.quantity;
+                    total += itemTotal;
+                    html += `
+                        <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                            <div style="flex: 1;">
+                                <p style="font-weight: bold; color: #333; font-size: 14px;">${product.name}</p>
+                                <p style="color: #666; font-size: 12px;">₹${product.price} × ${item.quantity} = ₹${itemTotal}</p>
+                            </div>
+                            <button class="btn-secondary" style="padding: 5px 10px; font-size: 12px;" onclick="removeFromCart(${product.id})">Remove</button>
+                        </div>
+                    `;
+                }
+            });
+            html += `
+                </div>
+                <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #ddd;">
+                    <p style="font-size: 16px; font-weight: bold; color: #ff9500;">Total: ₹${total}</p>
+                    <button class="btn-primary" style="width: 100%; margin-top: 10px;" onclick="goToCheckout()">Proceed to Checkout</button>
+                </div>
+            `;
+            content.innerHTML = html;
+        }
+
+        function goToCheckout() {
+            if (cart.length === 0) {
+                showSuccess('Cart is empty!', true);
+                return;
+            }
+            window.location.href = 'checkout.html';
+        }
+
+        function removeFromCart(productId) {
+            cart = cart.filter(item => item.id !== productId);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartModalContent();
+            updateCartSummary();
+            showSuccess('Removed from cart');
+        }
+
+        function showSuccess(message, isError = false) {
+            const msgDiv = document.getElementById('successMessage');
+            msgDiv.textContent = message;
+            msgDiv.style.background = isError ? '#e74c3c' : '#27ae60';
+            msgDiv.style.display = 'block';
+            setTimeout(() => {
+                msgDiv.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

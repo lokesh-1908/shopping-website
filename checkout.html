@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - ShopHub</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                🛍️ ShopHub
+            </div>
+            <div class="nav-icons">
+                <a href="index.html" style="text-decoration: none;">
+                    <button class="icon-btn">
+                        🏠 Home
+                    </button>
+                </a>
+                <button class="icon-btn" onclick="openCartModal()">
+                    🛒 Cart
+                </button>
+                <a href="wishlist.html" style="text-decoration: none;">
+                    <button class="icon-btn">
+                        ❤️ Wishlist
+                    </button>
+                </a>
+                <a href="admin.html" style="text-decoration: none;">
+                    <button class="icon-btn">
+                        🛠️ Admin
+                    </button>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin-top: 30px; margin-bottom: 30px;">
+            
+            <!-- Checkout Form -->
+            <div>
+                <h2 style="font-size: 28px; color: #ff9500; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 2px;">
+                    💳 Checkout
+                </h2>
+
+                <!-- Tabs -->
+                <div style="margin-bottom: 30px; border-bottom: 3px solid #ff9500; display: flex; flex-wrap: wrap;">
+                    <button style="background: none; border: none; padding: 10px 20px; font-size: 14px; font-weight: bold; color: #ff9500; cursor: pointer;" onclick="switchTab('addressTab')">📍 Address</button>
+                    <button style="background: none; border: none; padding: 10px 20px; font-size: 14px; font-weight: bold; color: #999; cursor: pointer;" onclick="switchTab('paymentTab')">💰 Payment</button>
+                    <button style="background: none; border: none; padding: 10px 20px; font-size: 14px; font-weight: bold; color: #999; cursor: pointer;" onclick="switchTab('otpTab')">🔐 OTP</button>
+                </div>
+
+                <!-- Address Tab -->
+                <div id="addressTab">
+                    <h3 style="color: #27ae60; margin-bottom: 15px;">Shipping Address</h3>
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="fullName" placeholder="Enter your full name">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="email" placeholder="Enter your email">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" id="phone" placeholder="Enter your phone number">
+                    </div>
+                    <div class="form-group">
+                        <label>Address</label>
+                        <input type="text" id="address" placeholder="Street address">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>City</label>
+                            <input type="text" id="city" placeholder="City">
+                        </div>
+                        <div class="form-group">
+                            <label>State</label>
+                            <input type="text" id="state" placeholder="State">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>ZIP Code</label>
+                            <input type="text" id="zip" placeholder="ZIP Code">
+                        </div>
+                        <div class="form-group">
+                            <label>Country</label>
+                            <input type="text" id="country" placeholder="Country">
+                        </div>
+                    </div>
+                    <button class="btn-primary" onclick="switchTab('paymentTab')">Continue to Payment →</button>
+                </div>
+
+                <!-- Payment Tab -->
+                <div id="paymentTab" style="display: none;">
+                    <h3 style="color: #27ae60; margin-bottom: 15px;">Payment Details</h3>
+                    <div class="form-group">
+                        <label>Cardholder Name</label>
+                        <input type="text" id="cardName" placeholder="Name on card">
+                    </div>
+                    <div class="form-group">
+                        <label>Card Number</label>
+                        <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Expiry Date</label>
+                            <input type="text" id="expiry" placeholder="MM/YY" maxlength="5">
+                        </div>
+                        <div class="form-group">
+                            <label>CVV</label>
+                            <input type="text" id="cvv" placeholder="123" maxlength="3">
+                        </div>
+                    </div>
+                    <div class="checkout-actions">
+                        <button class="btn-secondary" onclick="switchTab('addressTab')">← Back</button>
+                        <button class="btn-primary" onclick="switchTab('otpTab')">Continue to OTP →</button>
+                    </div>
+                </div>
+
+                <!-- OTP Tab -->
+                <div id="otpTab" style="display: none;">
+                    <h3 style="color: #27ae60; margin-bottom: 15px;">🔐 OTP Verification</h3>
+                    <p style="color: #666; margin-bottom: 20px; font-size: 14px;">An OTP has been sent to your phone number ending with <strong id="phoneMask">****</strong></p>
+                    
+                    <div class="form-group">
+                        <label>Enter OTP</label>
+                        <div style="display: flex; gap: 8px; justify-content: center;">
+                            <input type="text" id="otp1" class="otp-input" maxlength="1" placeholder="0" style="width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: bold;" onkeyup="moveToNext(this, 'otp2')">
+                            <input type="text" id="otp2" class="otp-input" maxlength="1" placeholder="0" style="width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: bold;" onkeyup="moveToNext(this, 'otp3')">
+                            <input type="text" id="otp3" class="otp-input" maxlength="1" placeholder="0" style="width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: bold;" onkeyup="moveToNext(this, 'otp4')">
+                            <input type="text" id="otp4" class="otp-input" maxlength="1" placeholder="0" style="width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: bold;">
+                        </div>
+                    </div>
+
+                    <div style="background: #e8f8f5; padding: 12px; border-radius: 8px; margin: 15px 0; text-align: center;">
+                        <p style="font-size: 12px; color: #27ae60; font-weight: bold;">Demo OTP: <span id="demoOTP" style="font-family: monospace; font-size: 14px; background: white; padding: 5px 10px; border-radius: 4px;">****</span></p>
+                    </div>
+
+                    <p style="text-align: center; margin-top: 15px; color: #999; font-size: 13px;">
+                        Didn't receive OTP? <a href="#" onclick="resendOTP(event)" style="color: #ff9500; text-decoration: none; font-weight: bold;">Resend</a>
+                    </p>
+
+                    <div class="checkout-actions" style="margin-top: 25px;">
+                        <button class="btn-secondary" onclick="switchTab('paymentTab')">← Back</button>
+                        <button class="btn-primary" onclick="completeCheckout()">✅ Place Order</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Summary Sidebar -->
+            <div>
+                <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); position: sticky; top: 100px;">
+                    <h3 style="color: #ff9500; margin-bottom: 15px; font-size: 18px;">📦 Order Summary</h3>
+                    <div id="checkoutSummary" style="max-height: 300px; overflow-y: auto;">
+                        <div style="text-align: center; color: #999; padding: 20px;">Loading...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Modal -->
+    <div id="cartModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('cartModal')">&times;</span>
+            <h2 class="modal-title">🛒 Shopping Cart</h2>
+            <div id="cartModalContent" class="empty-message">Your cart is empty</div>
+        </div>
+    </div>
+
+    <!-- Order Confirmation Modal -->
+    <div id="orderConfirmationModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <h2 class="modal-title" style="text-align: center; color: #27ae60;">✅ Order Confirmed!</h2>
+            
+            <div style="background: linear-gradient(135deg, #fff9e6 0%, #e8f8f5 100%); padding: 20px; border-radius: 12px; margin: 20px 0; text-align: center;">
+                <p style="font-size: 13px; color: #666; margin-bottom: 5px;">Order Number</p>
+                <p style="font-size: 28px; font-weight: bold; color: #ff9500; font-family: monospace;" id="orderNumber">ORD-1234567890</p>
+            </div>
+
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                <p style="font-size: 13px; font-weight: bold; color: #333; margin-bottom: 10px;">Order Details:</p>
+                <div id="confirmationOrderDetails" style="font-size: 13px; color: #666; line-height: 1.8;">
+                </div>
+            </div>
+
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <p style="font-size: 13px; font-weight: bold; color: #333; margin-bottom: 10px;">Shipping Address:</p>
+                <p style="font-size: 13px; color: #666;" id="confirmationAddress"></p>
+            </div>
+
+            <div style="background: #fff9e6; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ff9500;">
+                <p style="font-size: 13px; color: #666;">
+                    <strong>📧 Confirmation email</strong> has been sent to your email address.
+                </p>
+                <p style="font-size: 13px; color: #666; margin-top: 8px;">
+                    <strong>📱 SMS</strong> with tracking details will be sent to your phone.
+                </p>
+            </div>
+
+            <div class="checkout-actions">
+                <button class="btn-secondary" onclick="goHome()">Continue Shopping</button>
+                <button class="btn-primary" onclick="downloadBillPDF()">📥 Download Bill</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Message -->
+    <div id="successMessage" class="success-message"></div>
+
+    <script src="script.js"></script>
+    <script>
+        // Initialize checkout page
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProductsFromStorage();
+            loadFromLocalStorage();
+            updateCheckoutSummary();
+        });
+
+        function updateCheckoutSummary() {
+            const summary = document.getElementById('checkoutSummary');
+            if (cart.length === 0) {
+                summary.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #999;">
+                        <p>Your cart is empty</p>
+                        <a href="index.html" style="display: inline-block; margin-top: 10px;">
+                            <button class="btn-primary">Back to Shopping</button>
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            let subtotal = 0;
+            cart.forEach(item => {
+                const product = products.find(p => p.id === item.id);
+                if (product) {
+                    const itemTotal = product.price * item.quantity;
+                    subtotal += itemTotal;
+                    html += `
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
+                            <div style="flex: 1;">
+                                <p style="font-weight: bold; color: #333; font-size: 13px;">${product.name}</p>
+                                <p style="color: #666; font-size: 12px;">x${item.quantity}</p>
+                            </div>
+                            <p style="font-weight: bold; color: #ff9500;">₹${itemTotal}</p>
+                        </div>
+                    `;
+                }
+            });
+
+            const shipping = subtotal > 500 ? 0 : 50;
+            const tax = Math.round(subtotal * 0.1);
+            const total = subtotal + shipping + tax;
+
+            html += `
+                <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #ff9500;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="color: #666;">Subtotal:</span>
+                        <span style="font-weight: bold;">₹${subtotal}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="color: #666;">Shipping:</span>
+                        <span style="font-weight: bold; color: ${shipping === 0 ? '#27ae60' : '#ff9500'};">${shipping === 0 ? 'FREE' : '₹' + shipping}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                        <span style="color: #666;">Tax (10%):</span>
+                        <span style="font-weight: bold;">₹${tax}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding-top: 12px; border-top: 1px solid #ddd; font-size: 16px; color: #ff9500; font-weight: bold;">
+                        <span>Total:</span>
+                        <span>₹${total}</span>
+                    </div>
+                </div>
+            `;
+
+            summary.innerHTML = html;
+        }
+
+        function switchTab(tabName) {
+            document.getElementById('addressTab').style.display = tabName === 'addressTab' ? 'block' : 'none';
+            document.getElementById('paymentTab').style.display = tabName === 'paymentTab' ? 'block' : 'none';
+            document.getElementById('otpTab').style.display = tabName === 'otpTab' ? 'block' : 'none';
+
+            // Update tab colors
+            document.querySelectorAll('[onclick*="switchTab"]').forEach(btn => {
+                btn.style.color = '#999';
+            });
+            event.target.style.color = '#ff9500';
+
+            if (tabName === 'otpTab') {
+                generateOTP();
+                document.getElementById('phoneMask').textContent = document.getElementById('phone').value.slice(-4);
+            }
+        }
+
+        function moveToNext(input, nextId) {
+            if (input.value.length === 1) {
+                const nextInput = document.getElementById(nextId);
+                if (nextInput) nextInput.focus();
+            }
+        }
+
+        function generateOTP() {
+            generatedOTP = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+            document.getElementById('demoOTP').textContent = generatedOTP;
+        }
+
+        function resendOTP(e) {
+            e.preventDefault();
+            generateOTP();
+            showSuccess('OTP resent successfully!');
+        }
+
+        function verifyOTP() {
+            const otp1 = document.getElementById('otp1').value;
+            const otp2 = document.getElementById('otp2').value;
+            const otp3 = document.getElementById('otp3').value;
+            const otp4 = document.getElementById('otp4').value;
+            const enteredOTP = otp1 + otp2 + otp3 + otp4;
+            
+            if (enteredOTP === generatedOTP) {
+                return true;
+            }
+            showSuccess('Invalid OTP. Please try again!', true);
+            return false;
+        }
+
+        function completeCheckout() {
+            if (cart.length === 0) {
+                showSuccess('Your cart is empty!', true);
+                return;
+            }
+
+            const fullName = document.getElementById('fullName').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const address = document.getElementById('address').value;
+            const city = document.getElementById('city').value;
+
+            if (!fullName || !email || !phone || !address || !city) {
+                showSuccess('Please fill all required fields!', true);
+                return;
+            }
+
+            if (!verifyOTP()) {
+                return;
+            }
+
+            generateOrder(fullName, email, phone, address, city);
+            showOrderConfirmation();
+            openModal('orderConfirmationModal');
+        }
+
+        function generateOrder(fullName, email, phone, address, city) {
+            const state = document.getElementById('state').value;
+            const zip = document.getElementById('zip').value;
+            const country = document.getElementById('country').value;
+
+            let subtotal = 0;
+            let items = [];
+            cart.forEach(item => {
+                const product = products.find(p => p.id === item.id);
+                if (product) {
+                    const itemTotal = product.price * item.quantity;
+                    subtotal += itemTotal;
+                    items.push({
+                        id: product.id,
+                        name: product.name,
+                        price: product.price,
+                        quantity: item.quantity,
+                        total: itemTotal
+                    });
+                }
+            });
+
+            const shipping = subtotal > 500 ? 0 : 50;
+            const tax = Math.round(subtotal * 0.1);
+            const total = subtotal + shipping + tax;
+
+            currentOrder = {
+                orderNumber: 'ORD-' + Date.now(),
+                items: items,
+                subtotal: subtotal,
+                shipping: shipping,
+                tax: tax,
+                total: total,
+                customerName: fullName,
+                email: email,
+                phone: phone,
+                address: address,
+                city: city,
+                state: state,
+                zip: zip,
+                country: country,
+                orderDate: new Date().toLocaleDateString(),
+                orderTime: new Date().toLocaleTimeString()
+            };
+
+            let orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            orders.push(currentOrder);
+            localStorage.setItem('orders', JSON.stringify(orders));
+        }
+
+        function showOrderConfirmation() {
+            const orderDetails = document.getElementById('confirmationOrderDetails');
+            const address = document.getElementById('confirmationAddress');
+            const orderNum = document.getElementById('orderNumber');
+
+            orderNum.textContent = currentOrder.orderNumber;
+
+            let itemsHtml = '';
+            currentOrder.items.forEach(item => {
+                itemsHtml += `
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span>${item.name} x${item.quantity}</span>
+                        <span>₹${item.total}</span>
+                    </div>
+                `;
+            });
+
+            orderDetails.innerHTML = `
+                ${itemsHtml}
+                <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #ddd;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span>Subtotal:</span>
+                        <span>₹${currentOrder.subtotal}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span>Shipping:</span>
+                        <span>${currentOrder.shipping === 0 ? 'FREE' : '₹' + currentOrder.shipping}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Tax:</span>
+                        <span>₹${currentOrder.tax}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-weight: bold; color: #ff9500; margin-top: 8px;">
+                        <span>Total:</span>
+                        <span>₹${currentOrder.total}</span>
+                    </div>
+                </div>
+            `;
+
+            address.textContent = `${currentOrder.address}, ${currentOrder.city}, ${currentOrder.state} ${currentOrder.zip}, ${currentOrder.country}`;
+        }
+
+        function downloadBillPDF() {
+            const element = document.createElement('div');
+            element.innerHTML = `
+                <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 800px;">
+                    <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #ff9500; padding-bottom: 20px;">
+                        <h1 style="color: #ff9500; margin: 0;">🛍️ ShopHub</h1>
+                        <p style="color: #666; margin: 5px 0;">Your Online Shopping Destination</p>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <h2 style="color: #27ae60; margin-bottom: 10px;">Order Invoice</h2>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div>
+                                <p><strong>Order Number:</strong> ${currentOrder.orderNumber}</p>
+                                <p><strong>Order Date:</strong> ${currentOrder.orderDate}</p>
+                                <p><strong>Order Time:</strong> ${currentOrder.orderTime}</p>
+                            </div>
+                            <div>
+                                <p><strong>Customer Name:</strong> ${currentOrder.customerName}</p>
+                                <p><strong>Email:</strong> ${currentOrder.email}</p>
+                                <p><strong>Phone:</strong> ${currentOrder.phone}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="color: #333; margin-bottom: 10px;">Shipping Address</h3>
+                        <p style="color: #666; line-height: 1.6;">
+                            ${currentOrder.address}<br>
+                            ${currentOrder.city}, ${currentOrder.state} ${currentOrder.zip}<br>
+                            ${currentOrder.country}
+                        </p>
+                    </div>
+
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <thead>
+                            <tr style="background: #ff9500; color: white;">
+                                <th style="padding: 10px; text-align: left;">Product</th>
+                                <th style="padding: 10px; text-align: center;">Qty</th>
+                                <th style="padding: 10px; text-align: right;">Price</th>
+                                <th style="padding: 10px; text-align: right;">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${currentOrder.items.map(item => `
+                                <tr style="border-bottom: 1px solid #ddd;">
+                                    <td style="padding: 10px;">${item.name}</td>
+                                    <td style="padding: 10px; text-align: center;">${item.quantity}</td>
+                                    <td style="padding: 10px; text-align: right;">₹${item.price}</td>
+                                    <td style="padding: 10px; text-align: right;">₹${item.total}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+
+                    <div style="text-align: right; margin-bottom: 20px;">
+                        <div style="display: inline-block; width: 250px;">
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #ddd;">
+                                <span>Subtotal:</span>
+                                <span>₹${currentOrder.subtotal}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #ddd;">
+                                <span>Shipping:</span>
+                                <span>${currentOrder.shipping === 0 ? 'FREE' : '₹' + currentOrder.shipping}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 2px solid #ff9500;">
+                                <span>Tax (10%):</span>
+                                <span>₹${currentOrder.tax}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 12px 0; font-size: 18px; font-weight: bold; color: #ff9500;">
+                                <span>TOTAL:</span>
+                                <span>₹${currentOrder.total}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="background: #e8f8f5; padding: 15px; border-radius: 8px; margin-top: 30px;">
+                        <p style="color: #27ae60; margin: 0; font-weight: bold;">✅ Thank you for shopping with ShopHub!</p>
+                        <p style="color: #666; margin: 8px 0 0 0; font-size: 12px;">We appreciate your business. For any queries, please contact us.</p>
+                    </div>
+                </div>
+            `;
+
+            const opt = {
+                margin: 10,
+                filename: currentOrder.orderNumber + '_Bill.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+            };
+
+            html2pdf().set(opt).from(element).save();
+        }
+
+        function goHome() {
+            cart = [];
+            localStorage.setItem('cart', JSON.stringify(cart));
+            window.location.href = 'index.html';
+        }
+
+        function openCartModal() {
+            updateCartModalContent();
+            openModal('cartModal');
+        }
+
+        function updateCartModalContent() {
+            const content = document.getElementById('cartModalContent');
+            if (cart.length === 0) {
+                content.innerHTML = '<div class="empty-message">Your cart is empty</div>';
+                return;
+            }
+
+            let html = '<div style="max-height: 400px; overflow-y: auto;">';
+            let total = 0;
+            cart.forEach(item => {
+                const product = products.find(p => p.id === item.id);
+                if (product) {
+                    const itemTotal = product.price * item.quantity;
+                    total += itemTotal;
+                    html += `
+                        <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                            <div style="flex: 1;">
+                                <p style="font-weight: bold; color: #333; font-size: 14px;">${product.name}</p>
+                                <p style="color: #666; font-size: 12px;">₹${product.price} × ${item.quantity} = ₹${itemTotal}</p>
+                            </div>
+                            <button class="btn-secondary" style="padding: 5px 10px; font-size: 12px;" onclick="removeFromCart(${product.id})">Remove</button>
+                        </div>
+                    `;
+                }
+            });
+            html += `
+                </div>
+                <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #ddd;">
+                    <p style="font-size: 16px; font-weight: bold; color: #ff9500;">Total: ₹${total}</p>
+                </div>
+            `;
+            content.innerHTML = html;
+        }
+
+        function removeFromCart(productId) {
+            cart = cart.filter(item => item.id !== productId);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCheckoutSummary();
+            updateCartModalContent();
+            showSuccess('Removed from cart');
+        }
+
+        function showSuccess(message, isError = false) {
+            const msgDiv = document.getElementById('successMessage');
+            msgDiv.textContent = message;
+            msgDiv.style.background = isError ? '#e74c3c' : '#27ae60';
+            msgDiv.style.display = 'block';
+            setTimeout(() => {
+                msgDiv.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

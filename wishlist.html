@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Wishlist - ShopHub</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                🛍️ ShopHub
+            </div>
+            <div class="nav-icons">
+                <a href="index.html" style="text-decoration: none;">
+                    <button class="icon-btn">
+                        🏠 Home
+                    </button>
+                </a>
+                <button class="icon-btn" onclick="openCartModal()">
+                    🛒 Cart
+                </button>
+                <button class="icon-btn" onclick="openWishlistModal()">
+                    ❤️ Wishlist
+                </button>
+                <a href="admin.html" style="text-decoration: none;">
+                    <button class="icon-btn">
+                        🛠️ Admin
+                    </button>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div style="margin-top: 30px; margin-bottom: 30px;">
+            <h2 style="font-size: 28px; color: #ff9500; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 2px;">
+                ❤️ My Wishlist
+            </h2>
+
+            <div id="wishlistContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
+                <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #999;">
+                    <div style="font-size: 48px; margin-bottom: 15px;">💔</div>
+                    <div style="font-size: 16px;">Your wishlist is empty</div>
+                    <a href="index.html" style="display: inline-block; margin-top: 15px;">
+                        <button style="background: #ff9500; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">Continue Shopping</button>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Modal -->
+    <div id="cartModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('cartModal')">&times;</span>
+            <h2 class="modal-title">🛒 Shopping Cart</h2>
+            <div id="cartModalContent" class="empty-message">Your cart is empty</div>
+        </div>
+    </div>
+
+    <!-- Wishlist Modal (for quick view) -->
+    <div id="wishlistModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('wishlistModal')">&times;</span>
+            <h2 class="modal-title">❤️ My Wishlist</h2>
+            <div id="wishlistModalContent" class="empty-message">Your wishlist is empty</div>
+        </div>
+    </div>
+
+    <!-- Success Message -->
+    <div id="successMessage" class="success-message"></div>
+
+    <script src="script.js"></script>
+    <script>
+        // Initialize wishlist page
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProductsFromStorage();
+            loadFromLocalStorage();
+            renderWishlistPage();
+        });
+
+        function renderWishlistPage() {
+            const container = document.getElementById('wishlistContainer');
+            
+            if (wishlist.length === 0) {
+                container.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #999;">
+                        <div style="font-size: 48px; margin-bottom: 15px;">💔</div>
+                        <div style="font-size: 16px;">Your wishlist is empty</div>
+                        <a href="index.html" style="display: inline-block; margin-top: 15px;">
+                            <button style="background: #ff9500; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">Continue Shopping</button>
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            wishlist.forEach(item => {
+                const product = products.find(p => p.id === item.id);
+                if (product) {
+                    html += `
+                        <div class="product-card">
+                            <div class="product-image" style="background: linear-gradient(135deg, #ffe4b3 0%, #e8f8f5 100%);">
+                                ${product.image ? `<img src="${product.image}" alt="${product.name}" style="width: 100%; height: 100%; object-fit: cover;">` : `<span style="font-size: 60px;">${product.emoji}</span>`}
+                            </div>
+                            <div style="padding: 15px;">
+                                <h3 style="font-size: 16px; margin-bottom: 8px; color: #333;">${product.name}</h3>
+                                <p style="font-size: 13px; color: #666; margin-bottom: 10px;">${product.description || 'High quality product'}</p>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                    <span style="font-size: 18px; font-weight: bold; color: #ff9500;">₹${product.price}</span>
+                                    <span style="font-size: 12px;">${product.rating || '⭐⭐⭐⭐⭐'}</span>
+                                </div>
+                                <div style="display: flex; gap: 10px;">
+                                    <button class="btn-primary" style="flex: 1; padding: 8px; font-size: 14px;" onclick="addToCart(${product.id}); showSuccess('Added to cart!')">Add to Cart</button>
+                                    <button class="btn-secondary" style="flex: 1; padding: 8px; font-size: 14px;" onclick="removeFromWishlist(${product.id})">❌ Remove</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            container.innerHTML = html;
+        }
+
+        function removeFromWishlist(productId) {
+            wishlist = wishlist.filter(item => item.id !== productId);
+            localStorage.setItem('wishlist', JSON.stringify(wishlist));
+            renderWishlistPage();
+            showSuccess('Removed from wishlist');
+        }
+
+        function openCartModal() {
+            updateCartModalContent();
+            openModal('cartModal');
+        }
+
+        function openWishlistModal() {
+            updateWishlistModalContent();
+            openModal('wishlistModal');
+        }
+
+        function updateCartModalContent() {
+            const content = document.getElementById('cartModalContent');
+            if (cart.length === 0) {
+                content.innerHTML = '<div class="empty-message">Your cart is empty</div>';
+                return;
+            }
+
+            let html = '<div style="max-height: 400px; overflow-y: auto;">';
+            let total = 0;
+            cart.forEach(item => {
+                const product = products.find(p => p.id === item.id);
+                if (product) {
+                    const itemTotal = product.price * item.quantity;
+                    total += itemTotal;
+                    html += `
+                        <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                            <div style="flex: 1;">
+                                <p style="font-weight: bold; color: #333; font-size: 14px;">${product.name}</p>
+                                <p style="color: #666; font-size: 12px;">₹${product.price} × ${item.quantity} = ₹${itemTotal}</p>
+                            </div>
+                            <button class="btn-secondary" style="padding: 5px 10px; font-size: 12px;" onclick="removeFromCart(${product.id})">Remove</button>
+                        </div>
+                    `;
+                }
+            });
+            html += `
+                </div>
+                <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #ddd;">
+                    <p style="font-size: 16px; font-weight: bold; color: #ff9500;">Total: ₹${total}</p>
+                    <button class="btn-primary" style="width: 100%; margin-top: 10px;" onclick="goToCheckout()">Proceed to Checkout</button>
+                </div>
+            `;
+            content.innerHTML = html;
+        }
+
+        function updateWishlistModalContent() {
+            const content = document.getElementById('wishlistModalContent');
+            if (wishlist.length === 0) {
+                content.innerHTML = '<div class="empty-message">Your wishlist is empty</div>';
+                return;
+            }
+
+            let html = '<div style="max-height: 400px; overflow-y: auto;">';
+            wishlist.forEach(item => {
+                const product = products.find(p => p.id === item.id);
+                if (product) {
+                    html += `
+                        <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                            <div style="flex: 1;">
+                                <p style="font-weight: bold; color: #333; font-size: 14px;">${product.name}</p>
+                                <p style="color: #666; font-size: 12px;">Price: ₹${product.price}</p>
+                            </div>
+                            <button class="btn-secondary" style="padding: 5px 10px; font-size: 12px;" onclick="removeFromWishlist(${product.id})">Remove</button>
+                        </div>
+                    `;
+                }
+            });
+            html += '</div>';
+            content.innerHTML = html;
+        }
+
+        function goToCheckout() {
+            if (cart.length === 0) {
+                showSuccess('Cart is empty!', true);
+                return;
+            }
+            window.location.href = 'checkout.html';
+        }
+
+        function showSuccess(message, isError = false) {
+            const msgDiv = document.getElementById('successMessage');
+            msgDiv.textContent = message;
+            msgDiv.style.background = isError ? '#e74c3c' : '#27ae60';
+            msgDiv.style.display = 'block';
+            setTimeout(() => {
+                msgDiv.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
